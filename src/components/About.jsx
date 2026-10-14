@@ -36,7 +36,7 @@ export default function About() {
             <div className="about__glass-inner">
               <div className="about__intro">
                 <p className="about__lead">
-                  你好，我是{site.name}，一名拥有六年接稿经验的自由插画师 / 原画师。
+                  你好，我是{site.name}，一名拥有六年接稿经验的自由插画师。
                 </p>
                 <p className="about__text">
                   从绘本、品牌视觉到游戏原画，我习惯站在甲方的立场去理解每一次委托——

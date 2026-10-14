@@ -1,0 +1,138 @@
+/* ============================================================
+   创作过程 · 首页入口
+   大图 + 克制的说明，整块可点，进入作品详情页
+   ============================================================ */
+.case-feature__list {
+  display: grid;
+  gap: clamp(4rem, 8vw, 7rem);
+}
+
+.case-feature__card {
+  display: grid;
+  grid-template-columns: min(38vw, 560px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2.5rem, 5vw, 5rem);
+  max-width: 1180px;
+  margin: 0 auto;
+  border-radius: 22px;
+}
+
+.case-feature__card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 10px;
+}
+
+/* ---------- 大图 ---------- */
+.case-feature__media {
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(9, 13, 24, 0.6);
+  border: 1px solid var(--line);
+  box-shadow: 0 44px 96px -58px rgba(0, 0, 0, 0.95);
+  transition:
+    border-color 0.5s var(--ease),
+    box-shadow 0.6s var(--ease);
+}
+
+.case-feature__media img {
+  width: 100%;
+  height: auto;
+  transition: transform 0.9s var(--ease);
+}
+
+/* ---------- 说明 ---------- */
+.case-feature__meta {
+  max-width: 400px;
+}
+
+.case-feature__eyebrow {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.case-feature__title {
+  margin-top: 1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 3.4vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.case-feature__line {
+  margin-top: 0.7rem;
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+.case-feature__cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 2.2rem;
+  padding-bottom: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.case-feature__cta::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.26;
+  transition:
+    opacity 0.5s var(--ease),
+    background-color 0.5s var(--ease);
+}
+
+.case-feature__cta i {
+  font-style: normal;
+  transition: transform 0.5s var(--ease);
+}
+
+/* ---------- 悬停 ---------- */
+.case-feature__card:hover .case-feature__media {
+  border-color: rgba(233, 236, 245, 0.26);
+}
+
+.case-feature__card:hover .case-feature__media img {
+  transform: scale(1.035);
+}
+
+.case-feature__card:hover .case-feature__cta::after {
+  opacity: 1;
+  background: var(--accent);
+}
+
+.case-feature__card:hover .case-feature__cta i {
+  transform: translateX(6px);
+}
+
+@media (max-width: 900px) {
+  .case-feature__card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.9rem;
+  }
+
+  .case-feature__media {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .case-feature__meta {
+    max-width: none;
+    text-align: center;
+  }
+}

@@ -41,6 +41,8 @@ const TechText = ({
   fontSize = 150,
   letterSpacing = -0.05,
   color = '#ffffff',
+  gradient = null,
+  gradientAngle = 0,
   accentColor = '#ffffff',
   reach = 200,
   softness = 0.7,
@@ -72,6 +74,8 @@ const TechText = ({
       fontSize,
       letterSpacing,
       color,
+      gradient,
+      gradientAngle,
       accentColor,
       reach,
       softness,
@@ -136,6 +140,26 @@ const TechText = ({
       target.textBaseline = 'alphabetic'
     }
 
+    /* 纯色 / 渐变。渐变以「整行文字」的包围盒为基准算一条渐变线，
+       不是每个字各来一条 —— 每个字都是独立的小画布，各自渐变的话，
+       一行字会变成一串重复的小渐变，看着很碎。
+       这里 sprite 里的 user space 就是全局排版坐标（setTransform 只做整体平移缩放），
+       所以直接用 view 的全局坐标建渐变，拼起来正好是连续的一整条。 */
+    const paintFor = (c, s, view) => {
+      if (!s.gradient || s.gradient.length < 2) return s.color
+      const rad = ((s.gradientAngle ?? 0) * Math.PI) / 180
+      const ux = Math.cos(rad)
+      const uy = Math.sin(rad)
+      const cx = (view.left + view.right) / 2
+      const cy = (view.top + view.bottom) / 2
+      const half =
+        Math.abs(ux) * ((view.right - view.left) / 2) +
+        Math.abs(uy) * ((view.bottom - view.top) / 2)
+      const g = c.createLinearGradient(cx - ux * half, cy - uy * half, cx + ux * half, cy + uy * half)
+      s.gradient.forEach((col, i) => g.addColorStop(i / (s.gradient.length - 1), col))
+      return g
+    }
+
     const sprite = (s, view, glyph, stroke) => {
       const pad = Math.ceil(s.strokeWidth * 2 + 4)
       const left = glyph.box.x1 - pad
@@ -149,11 +173,12 @@ const TechText = ({
       if (!c) return { image, left, top }
       c.setTransform(dpr, 0, 0, dpr, -left * dpr, -top * dpr)
       setFont(c, s, view.size)
+      const paint = paintFor(c, s, view)
       if (stroke) {
         c.lineJoin = 'round'
         c.lineWidth = s.strokeWidth * 2
         c.lineCap = 'butt'
-        c.strokeStyle = s.color
+        c.strokeStyle = paint
         if (s.lineStyle !== 'solid') c.setLineDash([Math.max(1, s.dashLength), Math.max(1, s.dashGap)])
         c.strokeText(glyph.char, glyph.x, view.baseline)
         c.setLineDash([])
@@ -162,7 +187,7 @@ const TechText = ({
         c.fillText(glyph.char, glyph.x, view.baseline)
         c.globalCompositeOperation = 'source-over'
       } else {
-        c.fillStyle = s.color
+        c.fillStyle = paint
         c.fillText(glyph.char, glyph.x, view.baseline)
       }
       return { image, left, top }
@@ -176,6 +201,8 @@ const TechText = ({
         s.fontSize,
         s.letterSpacing,
         s.color,
+        (s.gradient || []).join(','),
+        s.gradientAngle,
         s.dashLength,
         s.dashGap,
         s.strokeWidth,

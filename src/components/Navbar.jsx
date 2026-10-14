@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { site, navLinks } from '../data/content.js'
 
-export default function Navbar() {
+/* dark：首页滚过深色区边界后由 Home 传进来，让导航栏也跟着换成深色。
+   这里不自己测量，是因为深色区的进度由 Home 的那个 rAF 循环统一算，
+   两处各算一遍，迟早会错开半屏。 */
+export default function Navbar({ dark = false }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -12,8 +15,12 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const className = ['nav', scrolled && 'nav--scrolled', dark && 'is-night']
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <header className={`nav ${scrolled ? 'nav--scrolled' : ''}`}>
+    <header className={className}>
       <div className="nav__inner">
         <a href="#top" className="nav__brand" onClick={() => setOpen(false)}>
           <span className="nav__mark">{site.name.slice(0, 1)}</span>

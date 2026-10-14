@@ -1,0 +1,632 @@
+/* ============================================================
+   作品详情页 · 一块大图 + 三段记录（需求 / 思路 / 步骤）
+   配色全部走内联的 --case-* 变量，跟着每个作品的 palette 走，
+   所以换一个作品只要在 caseStudies.js 里换一套色，这里不用动。
+   ============================================================ */
+.case {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding-bottom: clamp(4rem, 8vw, 7rem);
+
+  /* 整套深色默认值直接写死在这里，不再只依赖 CaseDetail.jsx 内联的那几个 --case-*。
+     这次踩到的就是这个坑：内联变量只要因为任何理由没落到 DOM 上（值成了 undefined、
+     或者干脆没设），background: var(--case-bg) 就会因为「计算值无效」整条失效，
+     background 退回初始值 transparent，页面立刻露出 body 的浅灰 #f3f2f6 ——
+     看上去就是「背景一片白」。而文字和图片照样正常，所以特别像「只有背景坏了」。
+     写在这里以后，深色底不依赖任何 JS，怎么都白不了。
+     内联的那一套仍然优先（行内样式权重更高），换作品配色照样管用。 */
+  --case-bg: #050a15;
+  --case-surface: #0b1424;
+  --case-line: rgba(150, 190, 235, 0.16);
+  --case-ink: #e8eef8;
+  --case-ink-soft: rgba(232, 238, 248, 0.72);
+  --case-ink-faint: rgba(232, 238, 248, 0.4);
+  --case-accent: #38e07b;
+  --case-accent-soft: rgba(56, 224, 123, 0.14);
+
+  background: var(--case-bg, #050a15);
+  color: var(--case-ink, #e8eef8);
+}
+
+.case:focus {
+  outline: none;
+}
+
+/* ---------- 背景粒子（PixelSnow） ----------
+   整页固定一层雪，只做氛围，不吃鼠标事件 ——
+   组件是监听 window 的 pointermove 再换算成容器内坐标的，
+   所以 pointer-events: none 不影响它「指尖推雪」的效果。 */
+.case__snow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* 底色也画在这一层。落雪画布本身是透明的（着色器在不画雪的地方输出透明黑），
+     它压在什么颜色上，页面看上去就是什么颜色 —— 所以把深底直接钉死在这里，
+     就算某个变量没解析出来，这一层也保证是黑的，不可能出现白背景。 */
+  background: var(--case-bg, #050a15);
+}
+
+/* 雪待在 z-index: 0 那一层，正文必须显式抬到它上面
+   （否则同级后来者也会被盖住）。
+   .case__bar 自己已经是 sticky + z-index: 5，不用再动。 */
+.case__notice,
+.case__hero,
+.case__block,
+.case__foot {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- 常驻返回栏 ---------- */
+.case__bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--case-bg);
+  background: color-mix(in srgb, var(--case-bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--case-line);
+}
+
+.case__bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: 64px;
+}
+
+.case__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--case-ink);
+  opacity: 0.78;
+  transition:
+    opacity 0.4s var(--ease),
+    color 0.4s var(--ease);
+}
+
+.case__back:hover {
+  opacity: 1;
+  color: var(--case-accent);
+}
+
+.case__back:focus-visible {
+  outline: 2px solid var(--case-accent);
+  outline-offset: 4px;
+}
+
+.case__bar-mark {
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--case-ink-faint);
+}
+
+/* ---------- 占位提示 ---------- */
+.case__notice {
+  padding: 1.1rem 0;
+  background: var(--case-accent-soft);
+  border-bottom: 1px solid var(--case-line);
+  font-size: 0.84rem;
+  line-height: 1.75;
+  color: var(--case-ink-soft);
+}
+
+.case__notice strong {
+  font-weight: 600;
+  color: var(--case-accent);
+}
+
+.case__notice code {
+  padding: 0.1em 0.42em;
+  border-radius: 4px;
+  /* 跟着 palette 走：深底上是提亮，浅底上是压暗，两边都看得见 */
+  background: color-mix(in srgb, var(--case-ink) 9%, transparent);
+  font-size: 0.92em;
+  color: var(--case-ink);
+}
+
+/* ---------- 首屏 ---------- */
+.case__hero {
+  padding-top: clamp(3.5rem, 7vw, 6.5rem);
+}
+
+.case__eyebrow {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--case-accent);
+}
+
+.case__title {
+  margin-top: 1.1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(2.8rem, 6vw, 5.6rem);
+  font-weight: 600;
+  line-height: 1.02;
+}
+
+.case__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 3rem;
+  margin-top: 2rem;
+  padding: 0;
+  list-style: none;
+}
+
+.case__meta li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.case__meta-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--case-ink-faint);
+}
+
+.case__meta-value {
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+/* 大图：宽度封顶并居中。
+   不能只写 width:100% —— 竖图按宽度撑满会变成一屏半高，看到一半就得往下滚。
+   封顶取 57vh，正好是「高度封到 76vh 时一张 3:4 竖图应有的宽度」
+   （76vh × 0.75 ≈ 57vh）。图框宽度贴着图片，所以不会两侧留空底板。 */
+.case__cover {
+  width: min(100%, 57vh);
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: clamp(2.5rem, 5vw, 4.5rem);
+  border: 1px solid var(--case-line);
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--case-surface);
+}
+
+.case__cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---------- 分段：左编号 + 右正文 ---------- */
+.case__block {
+  padding-top: clamp(4.5rem, 9vw, 8rem);
+}
+
+.case__block-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.34fr) minmax(0, 1fr);
+  gap: clamp(2rem, 4.5vw, 4.5rem);
+  align-items: start;
+}
+
+.case__block-inner--wide {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+.case__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 2.6vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.case__no {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--case-accent);
+}
+
+/* 限宽挂在段落本身而不是整块：挂在整块上的话，下面的要点表格和三张小卡
+   会被一起挤进 62ch，宽屏上白白空掉一半。
+   用 > 还有一个副作用是修掉了老写法的一个特异性 bug ——
+   `.case__body p`（0,1,1）盖过了 `.case__point-desc`（0,1,0），
+   三张小卡里的说明文字一直在用正文的字号行高。 */
+.case__body > p {
+  max-width: 62ch;
+  font-size: clamp(1rem, 1.1vw, 1.08rem);
+  line-height: 1.95;
+  color: var(--case-ink-soft);
+}
+
+.case__body p + p {
+  margin-top: 1.4rem;
+}
+
+/* ---------- 正文插图：思路流程里插的参考图 / 过程图 ----------
+   段落和插图在同一个数组里按顺序排，所以间距得由插图自己带；
+   `.case__body p + p` 是相邻兄弟选择器，隔着插图就不生效了。 */
+.case__figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  align-items: center;
+  gap: clamp(0.9rem, 1.8vw, 1.5rem);
+  margin: clamp(1.6rem, 2.8vw, 2.4rem) 0;
+}
+
+/* 只放一张时别拉满整行，居中收窄 */
+.case__figures--single {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+.case__figures--single .case__figure {
+  max-width: min(100%, 30rem);
+}
+
+/* 单张但要看清细节的（整幅成稿），放满正文栏，也不设高度上限 */
+.case__figures--wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.case__figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* 多张并排时统一撑满各列，横向对得齐，纵向高度不同由 align-items 居中 */
+.case__figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--case-line);
+  border-radius: 3px;
+}
+
+/* 单张时按原比例居中，并限高 —— 竖构图配 100% 宽会高得离谱 */
+.case__figures--single .case__figure img {
+  width: auto;
+  max-width: 100%;
+  max-height: 58vh;
+}
+
+.case__figure figcaption {
+  font-size: 0.8rem;
+  line-height: 1.65;
+  letter-spacing: 0.03em;
+  color: var(--case-ink-faint);
+}
+
+/* ---------- 终稿大图 ----------
+   和上面的插图同栏同宽（都撑满正文栏），只给它更大的上间距，
+   靠留白而不是靠尺寸来收束。整页只出现一次。
+   注意别再做横向出血 —— 那会比它上面那张底色图大出一半。 */
+.case__finale {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: clamp(3rem, 6vw, 5rem) 0 0;
+}
+
+.case__finale img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--case-line);
+  border-radius: 3px;
+  background: var(--case-surface);
+}
+
+.case__finale figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  letter-spacing: 0.03em;
+  color: var(--case-ink-faint);
+}
+
+/* ---------- 总结 ----------
+   和 01 / 02 同一套节奏：左边一个标题、右边一栏正文，
+   只是整块用一条细线和上面的终稿隔开，读起来是收尾而不是新一节。 */
+.case__closing {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 0.34fr) minmax(0, 1fr);
+  gap: clamp(2rem, 4.5vw, 4.5rem);
+  align-items: start;
+  margin-top: clamp(3rem, 6vw, 5rem);
+  padding-top: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid var(--case-line);
+}
+
+.case__closing-body > p {
+  max-width: 62ch;
+  font-size: clamp(1rem, 1.1vw, 1.08rem);
+  line-height: 1.95;
+  color: var(--case-ink-soft);
+}
+
+.case__closing-body p + p {
+  margin-top: 1.4rem;
+}
+
+/* ---------- 需求要点：细线表格 ---------- */
+.case__facts {
+  margin-top: 2.8rem;
+  max-width: 52rem;
+  border-top: 1px solid var(--case-line);
+}
+
+.case__fact {
+  display: grid;
+  grid-template-columns: minmax(0, 0.32fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 0.95rem 0;
+  border-bottom: 1px solid var(--case-line);
+}
+
+.case__fact dt {
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  color: var(--case-ink-faint);
+}
+
+.case__fact dd {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--case-ink);
+}
+
+/* ---------- 思路要点 ---------- */
+.case__points {
+  display: grid;
+  gap: 1px;
+  margin-top: 2.8rem;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--case-line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--case-line);
+}
+
+.case__point {
+  padding: clamp(1.4rem, 2.4vw, 2.1rem);
+  background: var(--case-bg);
+}
+
+.case__point-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--case-ink);
+}
+
+.case__point-desc {
+  margin-top: 0.6rem;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--case-ink-soft);
+}
+
+/* ---------- 步骤 ---------- */
+.case__steps {
+  display: grid;
+  gap: clamp(3rem, 6vw, 5.5rem);
+  padding: 0;
+  list-style: none;
+}
+
+.case__step {
+  display: grid;
+  grid-template-columns: minmax(0, 0.28fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+
+.case__step-no {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--case-accent);
+}
+
+.case__step-caption {
+  margin-top: 0.7rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 1.9vw, 1.7rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.case__step-note {
+  margin-top: 0.7rem;
+  font-size: 0.92rem;
+  line-height: 1.8;
+  color: var(--case-ink-faint);
+}
+
+.case__step-media {
+  border: 1px solid var(--case-line);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--case-surface);
+}
+
+.case__step-media img {
+  width: 100%;
+  height: auto;
+}
+
+/* 还没放图时的虚线占位框：16:10 横构图。
+   占位框的比例就是你该提供的步骤图比例 —— 按这个比例放图，
+   换上真图时版面不会跳。 */
+.case__frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  aspect-ratio: 16 / 10;
+  border: 1px dashed var(--case-line);
+  border-radius: 16px;
+  background: transparent;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  color: var(--case-ink-faint);
+}
+
+.case__frame-hint {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  color: var(--case-accent);
+  opacity: 0.75;
+}
+
+/* ---------- 页脚 ---------- */
+.case__foot {
+  margin-top: clamp(5rem, 10vw, 9rem);
+  padding-top: 2rem;
+  border-top: 1px solid var(--case-line);
+}
+
+.case__foot-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* 页脚落款（浅色页由 Signature 自己反相） */
+.case__sign {
+  margin-top: 1.6rem;
+}
+
+.case__mail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--case-accent);
+  transition: gap 0.4s var(--ease);
+}
+
+.case__mail:hover {
+  gap: 1.1rem;
+}
+
+/* ---------- 找不到作品 ---------- */
+.case--missing {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  text-align: center;
+}
+
+.case__missing {
+  display: grid;
+  gap: 1.6rem;
+  justify-items: center;
+}
+
+.case__missing p {
+  color: var(--case-ink-soft);
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 900px) {
+  .case__block-inner,
+  .case__step,
+  .case__closing {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.6rem;
+  }
+
+  .case__body {
+    max-width: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .case__bar-mark {
+    display: none;
+  }
+
+  .case__fact {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+
+  .case__meta {
+    gap: 0.5rem 2rem;
+  }
+}
+
+/* ============================================================
+   宽屏横排
+   默认版是竖着堆的窄栏：一张整屏高的竖图 + 一列大图。电脑上
+   屏幕是横的，照搬过来就是一路往下滚。这一段把宽度用起来 ——
+   标题与大图并排、思路三列、步骤两列，并给大图封上高度上限。
+   ============================================================ */
+@media (min-width: 1024px) {
+  /* 首屏：文案在左，完整作品在右，宽度基本一屏装得下 */
+  .case__hero-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr);
+    column-gap: clamp(2.5rem, 5vw, 5.5rem);
+    align-items: center;
+  }
+
+  /* 横排时图与文案同高居中，上面那段留白就不需要了
+     （宽度封顶与居中已经在基础规则里做过） */
+  .case__cover {
+    margin-top: 0;
+  }
+
+  /* 首屏顶部的留白收紧一点。基础值 7vw 在 1440 上是 100.8px，
+     再叠上 sticky 条（65px）和占位提示条（约 60px），作品图要到 y=225
+     才开始，900 高的窗口里图的下缘就压到折线下面去了。
+     收紧到 4vw（1440 上 57.6px）后，768 高的窗口也能完整装下。 */
+  .case__hero {
+    padding-top: clamp(2.5rem, 4vw, 4.5rem);
+  }
+
+  /* 思路三张小卡并排，不再竖着叠 */
+  .case__points {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* 步骤两列：说明移到图上面，横向排得开 */
+  .case__steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.75rem, 3vw, 2.75rem);
+  }
+
+  .case__step {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.1rem;
+    align-content: start;
+  }
+}

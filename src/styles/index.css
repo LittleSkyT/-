@@ -231,6 +231,10 @@ ol {
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 50;
+  /* 必须在这里解析一次 --ink：导航栏里的文字大多不自己写 color，
+     靠继承拿颜色。如果交给 body 去解析，body 用的是浅色区的 --ink，
+     深色时站名就会变成「深色字压在深色底上」。 */
+  color: var(--ink);
   background: rgba(243, 242, 246, 0.55);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
@@ -252,6 +256,36 @@ ol {
 .nav--scrolled {
   background: rgba(243, 242, 246, 0.72);
   box-shadow: 0 10px 34px -18px rgba(46, 50, 64, 0.35);
+}
+
+/* 滚进深色区后导航栏也跟着变深，否则一块浅色玻璃浮在夜色上。
+   做法是就地重绑变量：导航栏内部所有 var(--ink) / var(--bg) / var(--line)
+   会自动跟着换，不必逐个元素去覆盖。
+   --accent 故意不动，跟 .darkzone.is-dark 的处理保持一致。 */
+.nav.is-night {
+  --ink: var(--night-ink);
+  --line: var(--night-line);
+  --bg: var(--night);
+  background: rgba(7, 10, 20, 0.58);
+  border-bottom-color: rgba(233, 236, 245, 0.12);
+}
+
+/* 特异性比 .nav--scrolled 高，所以深色时往下滚不会又把背景拉回浅色 */
+.nav.is-night.nav--scrolled {
+  background: rgba(7, 10, 20, 0.78);
+  box-shadow: 0 10px 34px -18px rgba(0, 0, 0, 0.68);
+}
+
+/* 上缘那道白色高光落在深色底上像漏光，收一收 */
+.nav.is-night::after {
+  opacity: 0.18;
+}
+
+/* 品牌圆点原本是深底浅字（var(--ink) 底 + var(--cream) 字），
+   变量一换就成了浅底浅字，必须显式反过来 */
+.nav.is-night .nav__mark {
+  background: var(--night-ink);
+  color: var(--night);
 }
 
 .nav__inner {
@@ -1314,10 +1348,21 @@ a.info-list__value:hover {
    Footer
    ============================================================ */
 .footer {
+  /* 深色区那层 sticky 背景（.darkzone__bg 带 -100vh 负边距）会顺着 sticky
+     的约束越界盖到页脚上，把版权、导航和签名全挡掉。页脚自己抬到 z-index 2
+     就能压回去 —— 两边底色都是 --night，视觉上看不出区别。 */
+  position: relative;
+  z-index: 2;
   background: var(--night);
   color: var(--cream);
   border-top: 1px solid var(--night-line);
-  padding: 1.6rem 0;
+  padding: 2.2rem 0 1.6rem;
+}
+
+/* 手写签名：页脚是深色底，白墨直接放 */
+.footer__sign {
+  display: flex;
+  margin-bottom: 1.15rem;
 }
 
 .footer__inner {
@@ -1537,6 +1582,11 @@ a.info-list__value:hover {
 
   .nav__links.is-open {
     transform: translateX(0);
+  }
+
+  /* 深色区里展开菜单时，原本那道浅色投影会在暗底上糊出一圈灰 */
+  .nav.is-night .nav__links {
+    box-shadow: -30px 0 60px rgba(0, 0, 0, 0.55);
   }
 
   .nav__toggle {

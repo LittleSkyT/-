@@ -2,6 +2,7 @@ import { site, heroPanels } from '../data/content.js'
 import PatternWaves from './PatternWaves.jsx'
 import AccordionGallery from './AccordionGallery.jsx'
 import TechText from './TechText.jsx'
+import Signature from './Signature.jsx'
 
 const TITLE_FONT = "'Cormorant Garamond', 'Noto Serif SC', 'Songti SC', 'STSong', Georgia, serif"
 
@@ -64,7 +65,13 @@ export default function Hero() {
                 <TechText text="献给想象" color="#2e3240" {...TITLE_PROPS} />
               </span>
               <span className="hero__title-line">
-                <TechText text="无尽的山海" color="#7288a3" {...TITLE_PROPS} />
+                <TechText
+                  text="无尽的山海"
+                  color="#7288a3"
+                  gradient={['#e292b6', '#6d95d4']}
+                  gradientAngle={0}
+                  {...TITLE_PROPS}
+                />
               </span>
             </h1>
 
@@ -72,6 +79,13 @@ export default function Hero() {
               {site.name}
               <em>{site.netName}</em>
             </p>
+
+            {/* 首屏落款：底色是浅色的，所以让签名翻成墨色 */}
+            <Signature
+              onLight
+              className="hero__sign"
+              style={{ marginBlock: '0.4rem 1.05rem' }}
+            />
 
             <p className="hero__meta-line">
               Illustration · 商业插画 / 原画 / 绘本 · 六年接稿经验

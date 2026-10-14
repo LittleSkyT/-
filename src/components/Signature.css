@@ -1,0 +1,16 @@
+/* ---------- 手写签名（透明底白墨 png） ---------- */
+.signature {
+  display: block;
+  width: clamp(132px, 12vw, 196px);
+  height: auto;
+  opacity: 0.88;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 浅色底：翻成墨色，同时压低一点存在感，别抢正文 */
+.signature--ink {
+  filter: invert(1);
+  opacity: 0.74;
+}

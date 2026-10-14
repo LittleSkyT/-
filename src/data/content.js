@@ -38,6 +38,7 @@ export const heroPanels = [
 export const navLinks = [
   { label: '关于', href: '#about' },
   { label: '精选作品', href: '#works' },
+  { label: '创作过程', href: '#process' },
   { label: '优势', href: '#strengths' },
   { label: '联系', href: '#contact' },
 ]
@@ -61,17 +62,17 @@ export const stats = [
 export const experience = [
   {
     year: '2020 — 至今',
-    title: '自由插画师 / 原画师',
+    title: '自由插画师',
     desc: '从高二开始接稿，六年间持续承接品牌插画、绘本与游戏原画等商业委托。',
   },
   {
     year: '2022 — 2025',
-    title: '闽南师范高等专科学校 · 在读',
+    title: '闽南师范高等专科学校 · 数字媒体技术',
     desc: '在校期间保持稳定接稿，把专业训练与商业项目并行推进。',
   },
   {
     year: '2025 — 2027',
-    title: '闽南科技学院 · 在读',
+    title: '闽南科技学院 · 数字媒体艺术',
     desc: '本科阶段继续深造，同时持续输出商业插画作品。',
   },
 ]
@@ -87,6 +88,11 @@ export const profile = [
 
 // 精选作品：顺序 = 轮播顺序，src/assets/works/ 里一一对应
 // title = 作品名 / category = 角色 · 题材（显示为轮播副标题）/ date = 完成日期
+//
+// ⚠ 这个列表和 caseStudies.js（首页「创作过程」+ 作品详情页）是两套独立数据，
+//   同一个 id 不代表同一个作品。第 1 张「王亦为棋 / 刻律德菈 / 2025.09.06」
+//   和案例里的「笼中鸟 / 春日流萤 / 2025.09.14」是两件不同的作品，
+//   历史上被写成过一样，改的时候别再把两边对齐。
 export const projects = [
   { id: 'wang-yi-wei-qi', title: '王亦为棋', category: '刻律德菈', date: '2025.09.06', img: work01 },
   { id: 'ji-ban', title: '羁绊', category: '魔法少女小圆', date: '2025.09.02', img: work02 },

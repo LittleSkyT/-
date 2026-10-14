@@ -39,6 +39,7 @@ export const navLinks = [
   { label: '关于', href: '#about' },
   { label: '精选作品', href: '#works' },
   { label: '创作过程', href: '#process' },
+  { label: '全部作品', href: '#gallery' },
   { label: '优势', href: '#strengths' },
   { label: '联系', href: '#contact' },
 ]

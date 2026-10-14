@@ -1,0 +1,127 @@
+/* ============================================================
+   全部作品 · 首页入口
+   一条倾斜漂移的作品墙（DriftWall，React Bits）+ 说明，
+   整块可点，进入 #/gallery。
+   ============================================================ */
+.gallery-teaser__card {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.4rem);
+  max-width: 1180px;
+  margin: 0 auto;
+  border-radius: 22px;
+}
+
+.gallery-teaser__card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 10px;
+}
+
+/* ---------- 作品墙 ---------- */
+/* DriftWall 靠 container 的实际高度决定每列拷贝几份，所以这里必须给死高度 */
+.gallery-teaser__wall {
+  position: relative;
+  height: clamp(360px, 46vw, 560px);
+  border-radius: 20px;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse 78% 82% at 50% 46%,
+    rgba(9, 13, 24, 0.62),
+    rgba(9, 13, 24, 0) 100%
+  );
+}
+
+/* ---------- 说明 ---------- */
+.gallery-teaser__meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  flex-wrap: wrap;
+}
+
+.gallery-teaser__eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.gallery-teaser__title {
+  margin-top: 0.7rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.9rem, 3.2vw, 2.9rem);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.gallery-teaser__tail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.1rem;
+  text-align: right;
+}
+
+.gallery-teaser__line {
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+.gallery-teaser__cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding-bottom: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+.gallery-teaser__cta::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.26;
+  transition:
+    opacity 0.5s var(--ease),
+    background-color 0.5s var(--ease);
+}
+
+.gallery-teaser__cta i {
+  font-style: normal;
+  transition: transform 0.5s var(--ease);
+}
+
+/* ---------- 悬停 ---------- */
+.gallery-teaser__card:hover .gallery-teaser__cta::after {
+  opacity: 1;
+  background: var(--accent);
+}
+
+.gallery-teaser__card:hover .gallery-teaser__cta i {
+  transform: translateX(6px);
+}
+
+@media (max-width: 780px) {
+  .gallery-teaser__wall {
+    height: clamp(300px, 74vw, 420px);
+  }
+
+  .gallery-teaser__meta {
+    align-items: flex-start;
+  }
+
+  .gallery-teaser__tail {
+    align-items: flex-start;
+    text-align: left;
+  }
+}

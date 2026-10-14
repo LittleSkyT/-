@@ -1,12 +1,18 @@
 import Home from './Home.jsx'
 import CaseDetail from './components/CaseDetail.jsx'
-import { useCaseId } from './lib/router.js'
+import Gallery from './components/Gallery.jsx'
+import { useRoute } from './lib/router.js'
 
-/* 整站只有一个开关：地址里有没有 #/case/<id>。
-   有 → 渲染作品详情页；没有 → 渲染首页。
-   两页各自管自己的滚动位置和画布，切过去时另一页是完全卸载的。 */
+/* 整站是一个 hash 开关：
+     #/case/<id> → 作品详情页
+     #/gallery   → 全部作品页（16 张缩略图）
+     都没有      → 首页
+   三页各自管自己的滚动位置和画布，切过去时另外两页是完全卸载的。 */
 export default function App() {
-  const activeId = useCaseId()
+  const route = useRoute()
 
-  return activeId ? <CaseDetail id={activeId} /> : <Home />
+  if (route.name === 'case') return <CaseDetail id={route.id} />
+  if (route.name === 'gallery') return <Gallery />
+
+  return <Home />
 }

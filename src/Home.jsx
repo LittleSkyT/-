@@ -5,6 +5,7 @@ import Marquee from './components/Marquee.jsx'
 import About from './components/About.jsx'
 import Works from './components/Works.jsx'
 import CaseFeature from './components/CaseFeature.jsx'
+import GalleryTeaser from './components/GalleryTeaser.jsx'
 import Strengths from './components/Strengths.jsx'
 import Contact from './components/Contact.jsx'
 import Footer from './components/Footer.jsx'
@@ -161,6 +162,7 @@ export default function Home({ active = true }) {
 
             <Works />
             <CaseFeature />
+            <GalleryTeaser />
             <Strengths />
             <Contact />
           </div>

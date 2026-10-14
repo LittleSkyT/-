@@ -7,7 +7,7 @@ export default function Strengths() {
     <section className="strengths section" id="strengths">
       <div className="container">
         <Reveal className="section__head">
-          <span className="section__index">04</span>
+          <span className="section__index">05</span>
           <h2 className="section__title">我的优势</h2>
           <p className="section__intro">为什么客户愿意长期合作。</p>
         </Reveal>

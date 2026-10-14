@@ -1,0 +1,260 @@
+/* ============================================================
+   全部作品页（#/gallery）
+   ------------------------------------------------------------
+   背景：整页一层 PixelSnow 雪，参数和作品详情页（CaseDetail）一致，
+         只有颜色换成本页的点缀色。雪在 z-index: 0，正文抬到 1。
+   作品：ChromaGrid（React Bits）排布 —— 列数 / 圆角 / 比例都由
+         Gallery.jsx 传的 props 决定（columns=3 · aspectRatio 4/3 ·
+         cardRadius=21 · radius=250 · reveal="card"）。
+   点任一张 → 大图查看器（← → 切换、Esc 关闭）。
+   ============================================================ */
+.gallery {
+  --g-bg: #070a14;
+  --g-mat: rgba(233, 236, 245, 0.045);
+  --g-line: rgba(233, 236, 245, 0.14);
+  --g-ink: #e9ecf5;
+  --g-ink-soft: rgba(233, 236, 245, 0.74);
+  --g-ink-faint: rgba(233, 236, 245, 0.48);
+  --g-accent: #bb8a9a;
+
+  min-height: 100vh;
+  background: var(--g-bg);
+  color: var(--g-ink);
+  outline: none;
+}
+
+/* ---------- 背景粒子（PixelSnow） ----------
+   整页固定一层雪，只做氛围，不吃鼠标事件 ——
+   组件是监听 window 的 pointermove 再换算成容器内坐标的，
+   所以 pointer-events: none 不影响它「指尖推雪」的效果。 */
+.gallery__snow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* 底色也画在这一层。落雪画布本身是透明的（着色器在不画雪的地方输出透明黑），
+     它压在什么颜色上，页面看上去就是什么颜色 —— 所以把深底直接钉死在这里，
+     就算某个变量没解析出来，这一层也保证是黑的，不可能出现白背景。 */
+  background: var(--g-bg, #070a14);
+}
+
+/* 雪待在 z-index: 0 那一层，正文必须显式抬到它上面
+   （否则同级后来者也会被盖住）。
+   .gallery__bar 自己已经是 sticky + z-index: 30，不用再动。 */
+.gallery__head,
+.gallery__grid-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- 常驻返回栏 ---------- */
+.gallery__bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(7, 10, 20, 0.84);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--g-line);
+}
+.gallery__bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1rem;
+}
+.gallery__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--g-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--g-ink-soft);
+  font: inherit;
+  font-size: 0.86rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    color 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease;
+}
+.gallery__back:hover {
+  color: var(--g-ink);
+  border-color: rgba(187, 138, 154, 0.55);
+  background: rgba(187, 138, 154, 0.1);
+}
+.gallery__back:focus-visible {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 3px;
+}
+.gallery__bar-mark {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  color: var(--g-ink-faint);
+}
+
+/* ---------- 页头 ---------- */
+.gallery__head {
+  padding-block: clamp(3rem, 7vw, 6rem) clamp(1.5rem, 3vw, 2.5rem);
+}
+.gallery__eyebrow {
+  display: inline-block;
+  margin-bottom: 0.9rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--g-accent);
+}
+.gallery__title {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+}
+.gallery__intro {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  color: var(--g-ink-soft);
+}
+
+/* ---------- 作品网格 ----------
+   ChromaGrid（React Bits）自己带全部卡片样式，这里只负责外边距。
+   尺寸/圆角/比例由 Gallery.jsx 传的 props 决定：
+   columns=3 · aspectRatio="4 / 3" · cardRadius=21 · radius=250
+   reveal="card"：整张卡片在悬停时才上色，静止时是灰的。 */
+.gallery__chroma {
+  padding-bottom: clamp(4rem, 9vw, 8rem);
+}
+
+/* ---------- 大图查看器 ---------- */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(0.5rem, 2vw, 1.5rem);
+  padding: clamp(1rem, 4vh, 3rem) clamp(0.75rem, 3vw, 2.5rem);
+  background: rgba(3, 5, 11, 0.94);
+  backdrop-filter: blur(6px);
+  animation: lightbox-in 220ms ease both;
+}
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.lightbox__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+  max-height: 100%;
+  margin: 0;
+}
+.lightbox__stage img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 11rem);
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
+}
+.lightbox__meta {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  color: var(--g-ink-soft);
+}
+.lightbox__counter {
+  color: var(--g-ink);
+  font-variant-numeric: tabular-nums;
+}
+.lightbox__hint {
+  color: var(--g-ink-faint);
+}
+
+.lightbox__close,
+.lightbox__nav {
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border: 1px solid var(--g-line);
+  border-radius: 999px;
+  background: rgba(13, 18, 34, 0.72);
+  color: var(--g-ink-soft);
+  font: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    border-color 200ms ease,
+    background 200ms ease;
+}
+.lightbox__close:hover,
+.lightbox__nav:hover {
+  color: var(--g-ink);
+  border-color: rgba(187, 138, 154, 0.6);
+  background: rgba(187, 138, 154, 0.16);
+}
+.lightbox__close:focus-visible,
+.lightbox__nav:focus-visible {
+  outline: 2px solid var(--g-accent);
+  outline-offset: 3px;
+}
+
+.lightbox__close {
+  position: absolute;
+  top: clamp(0.9rem, 2.5vh, 1.6rem);
+  right: clamp(0.9rem, 2.5vw, 1.8rem);
+}
+.lightbox__nav--prev {
+  justify-self: start;
+}
+.lightbox__nav--next {
+  justify-self: end;
+}
+
+@media (max-width: 720px) {
+  .lightbox {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lightbox__nav {
+    position: absolute;
+    bottom: clamp(1rem, 4vh, 2rem);
+  }
+  .lightbox__nav--prev {
+    left: 1.2rem;
+  }
+  .lightbox__nav--next {
+    right: 1.2rem;
+  }
+  .lightbox__stage img {
+    max-height: calc(100vh - 13rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery__cell,
+  .gallery__cell img {
+    transition: none;
+  }
+  .lightbox {
+    animation: none;
+  }
+}

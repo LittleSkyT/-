@@ -6,7 +6,7 @@ export default function Contact() {
     <section className="contact section" id="contact">
       <div className="container contact__inner">
         <Reveal className="contact__head">
-          <span className="section__index section__index--light">05</span>
+          <span className="section__index section__index--light">06</span>
           <h2 className="contact__title">
             一起创作点
             <br />

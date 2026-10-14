@@ -1,0 +1,15 @@
+.terminal-rain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* 顶部柔和淡出，雨幕从深色底里自然浮现 */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 18%, #000 100%);
+}
+
+.terminal-rain__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

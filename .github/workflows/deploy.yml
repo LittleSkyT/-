@@ -35,14 +35,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Ensure esbuild binary is usable
-        run: |
-          if ! pnpm exec esbuild --version; then
-            echo "::warning::esbuild binary missing after install — forcing a rebuild"
-            pnpm rebuild esbuild
-          fi
-          pnpm exec esbuild --version
-
       - name: Build
         run: pnpm build
 
